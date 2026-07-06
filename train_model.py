@@ -1,25 +1,24 @@
 import joblib
 from sklearn.datasets import load_iris
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import accuracy_score
 
+iris = load_iris()
+X, y = iris.data, iris.target
+target_names = iris.target_names.tolist()  # ['setosa', 'versicolor', 'virginica']
 
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
 
-iris_dataset = load_iris()
+model = LogisticRegression(max_iter=200)
+model.fit(X_train, y_train)
 
-X_train, X_test, y_train , y_test = train_test_split(iris_dataset['data'], iris_dataset['target'], random_state=0)
+accuracy = accuracy_score(y_test, model.predict(X_test))
+print(f"Test accuracy: {accuracy:.3f}")
 
-knn = KNeighborsClassifier(n_neighbors=1)
-
-knn.fit(X_train, y_train)
-
-
-print("train accuracy is ", knn.score(X_train, y_train))
-print("test accuracy is ", knn.score(X_test, y_test))
-
-
-target_names = ['setosa', 'versicolor', 'virginica']
-
-joblib.dump({"model": knn, "target_names": target_names}, 'knn.joblib')
-
-print("model saved to knn.joblib")
+# Save both the model AND the class names together - the API needs the names
+# to turn a predicted class index (0, 1, 2) back into a readable label
+joblib.dump({"model": model, "target_names": target_names}, "iris_model.joblib")
+print("Saved model to iris_model.joblib")
